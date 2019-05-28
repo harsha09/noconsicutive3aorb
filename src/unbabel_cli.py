@@ -15,6 +15,7 @@ def read_input(input_file, out_file, window_size, breakdown=1):
         ValueError: if breakdown or window_size are not integers
                     if window_size < breakdown
                     if breakdown or window_size are < 1
+                    if output filename is not given
     Returns:
         string: always Done...
     """
@@ -24,6 +25,9 @@ def read_input(input_file, out_file, window_size, breakdown=1):
 
     if not exists(split(out_file)[0]):
         raise FileNotFoundError('Please provide path to write output file.')
+
+    if split(out_file) < 1:
+        raise ValueError('Please provide output filename.')
 
     if breakdown < 1 or not isinstance(breakdown, int):
         raise ValueError('Breakdown must be an integer and greater than 0.')
