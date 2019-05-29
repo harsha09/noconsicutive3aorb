@@ -1,15 +1,20 @@
-# Bakckend Engineering Challenge
+# Backend Engineering Challenge
 
+##How to run
 
-Welcome to our Engineering Challenge repository 🖖
+Follow below steps
 
-If you found this repository it probably means that you are participating in our recruitment process. Thank you for your time and energy. If that's not the case please take a look at our [openings](https://unbabel.com/careers/) and apply!
++ git clone git@github.com:harsha09/event_stream.git
++ cd event_stream
++ pip install -r requirements.txt
++ python src/unbabel_cli.py --input_file=data/input.json --out_file=data/output.json --window_size=20 --breakdown=1
 
-Please fork this repo before you start working on the challenge, read it careful and take your time and think about the solution. Also, please fork this repository because we will evaluate the code on the fork.
-
-This is an opportunity for us both to work together and get to know each other in a more technical way. If have some doubt please open and issue and we'll reach out to help.
-
-Good luck!
+Following arguments you can pass to unbabel_cli.py
++ input_file: The locatin of input events file
++ out_file: The location of the output file to save the aggregation.
++ window_size: The window size in minutes. (Past window_size minutes).
++ breakdown (optional): The breakdown of window by minutes. By default 1.
++ end_date (optional): By default current datetime. Specify in format YYYYMMDD HHMM 
 
 ## Challenge Scenario
 
