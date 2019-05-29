@@ -1,3 +1,5 @@
+"""
+"""
 import json
 from datetime import datetime
 from datetime import timedelta
@@ -6,10 +8,17 @@ from collections import namedtuple
 from os import linesep
 
 
-event_tuple = namedtuple('Event', ['start', 'end', 'dur'])
+event_enum = namedtuple('Event', ['start', 'end', 'dur'])
 
 
 def calculate_moving_average(events, dt_indexed_dur):
+    """Calculates the moving average of events.
+    Args:
+        events (generator): the list of events with start date, end date and duration
+        dt_indexed_dur (list): the list of duration with time sampled on breakdown
+
+    Returns:
+        list: list of dictionaries"""
 
     data = []
     for e in events:
@@ -33,17 +42,31 @@ def calculate_moving_average(events, dt_indexed_dur):
 
 
 def process_event(event, window_min, window_max):
+    """Extracts the event's end time based on the starting timestamp and
+    duration, nr_words. Filters event within window specified only.
+
+    Args:
+        event (string):  
+        window_min (int): 
+        window_max (int): 
+
+    Returns:
+        namedtuple: event with start_date, end_date and duration"""
+
     event = json.loads(event)
     start_date = datetime.strptime(event.get('timestamp'), '%Y-%m-%d %H:%M:%S.%f')
     duration = event.get('duration') * event.get('nr_words', 1)
     end_date = start_date + timedelta(seconds=duration)
 
+    # whether event start is between window
     cond1 = start_date >= window_min and start_date <= window_max
+    # whether event end is between window
     cond2 = end_date >= window_min and end_date <= window_max
-    eval_cond = cond1 or cond2
+    # whether window is between event
+    cond3 = end_date > window_max and start_date < window_min
 
-    if eval_cond:
-        return event_tuple(start_date, end_date, event.get('duration'))
+    if any([cond1, cond2, cond3]):
+        return event_enum(start_date, end_date, event.get('duration'))
 
 
 def read_events_in_window(file_path, window_min, window_max):
@@ -58,7 +81,7 @@ def write_data(file_path, data):
     with open(file_path, 'w') as fh:
         for d in data:
             fh.write(json.dumps(d))
-            fh.write('\n')
+            fh.write(linesep)
 
 
 def run(events_file, out_file, window_size, breakdown):
@@ -67,9 +90,8 @@ def run(events_file, out_file, window_size, breakdown):
 
     zip_ob = zip(range(0, window_size, breakdown), range(breakdown, window_size + 1, breakdown))
 
-    dt_indexed_dur = [event_tuple(window_max - timedelta(minutes=i[1]), window_max - timedelta(minutes=i[0]), []) for i in zip_ob]
+    dt_indexed_dur = [event_enum(window_max - timedelta(minutes=i[1]), window_max - timedelta(minutes=i[0]), []) for i in zip_ob]
 
     events = read_events_in_window(events_file, window_min, window_max)
     
     write_data(out_file, calculate_moving_average(events, dt_indexed_dur))
-
