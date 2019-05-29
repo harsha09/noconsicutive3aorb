@@ -7,14 +7,14 @@ Follow below steps
 + git clone git@github.com:harsha09/event_stream.git
 + cd event_stream
 + pip install -r requirements.txt
-+ python src/unbabel_cli.py --input_file=data/input.json --out_file=data/output.json --window_size=20 --breakdown=1
++ python python src/unbabel_cli.py --input_file=data/input.json --out_file=data/output.json --window_size=20 --breakdown=1 --end_date=2018-12-26,18:24
 
 Following arguments you can pass to unbabel_cli.py
 + input_file: The locatin of input events file
 + out_file: The location of the output file to save the aggregation.
 + window_size: The window size in minutes. (Past window_size minutes).
 + breakdown (optional): The breakdown of window by minutes. By default 1.
-+ end_date (optional): By default current datetime. Specify in format YYYYMMDD HHMM 
++ end_date (optional): By default current datetime. Specify in format %Y-%m-%d,%H:%M.
 
 ## Challenge Scenario
 

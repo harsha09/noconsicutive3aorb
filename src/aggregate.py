@@ -99,8 +99,9 @@ def write_data(file_path, data):
 
 
 
-def run(events_file, out_file, window_size, breakdown):
-    window_max = datetime.strptime('2018-12-26 18:24:00', '%Y-%m-%d %H:%M:%S').replace(second=0, microsecond=0)
+def run(events_file, out_file, window_size, breakdown, end_date):
+    # window_max = datetime.strptime('2018-12-26,18:24:00', '%Y-%m-%d %H:%M:%S').replace(second=0, microsecond=0)
+    window_max = end_date
     window_min = window_max - timedelta(minutes=window_size)
 
     zip_ob = zip(range(0, window_size, breakdown), range(breakdown, window_size + 1, breakdown))
