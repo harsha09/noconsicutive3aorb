@@ -1,13 +1,13 @@
-"""
-"""
 import json
 from datetime import datetime
 from datetime import timedelta
 from numpy import mean
 from collections import namedtuple
 from os import linesep
+from logger import get_logger
 
 
+logger = get_logger('stream_log')
 event_enum = namedtuple('Event', ['start', 'end', 'dur'])
 
 
@@ -42,8 +42,7 @@ def calculate_moving_average(events, dt_indexed_dur):
 
 
 def process_event(event, window_min, window_max):
-    """Extracts the event's end time based on the starting timestamp and
-    duration, nr_words. Filters event within window specified only.
+    """Filters only the events within the window..
 
     Args:
         event (string):  
@@ -53,20 +52,28 @@ def process_event(event, window_min, window_max):
     Returns:
         namedtuple: event with start_date, end_date and duration"""
 
-    event = json.loads(event)
-    start_date = datetime.strptime(event.get('timestamp'), '%Y-%m-%d %H:%M:%S.%f')
-    duration = event.get('duration') * event.get('nr_words', 1)
-    end_date = start_date + timedelta(seconds=duration)
+    logger.info('Processing the Event: {}'.format(event))
 
-    # whether event start is between window
-    cond1 = start_date >= window_min and start_date <= window_max
-    # whether event end is between window
-    cond2 = end_date >= window_min and end_date <= window_max
-    # whether window is between event
-    cond3 = end_date > window_max and start_date < window_min
+    try:
+        event = json.loads(event)
+        start_date = datetime.strptime(event.get('timestamp'), '%Y-%m-%d %H:%M:%S.%f')
+        duration = event.get('duration') * event.get('nr_words', 1)
+        end_date = start_date + timedelta(seconds=duration)
 
-    if any([cond1, cond2, cond3]):
-        return event_enum(start_date, end_date, event.get('duration'))
+        # whether event start is between window
+        cond1 = start_date >= window_min and start_date <= window_max
+        # whether event end is between window
+        cond2 = end_date >= window_min and end_date <= window_max
+        # whether window is between event
+        cond3 = end_date > window_max and start_date < window_min
+
+        if any([cond1, cond2, cond3]):
+            logger.info('Event is within the window')
+            return event_enum(start_date, end_date, event.get('duration'))
+        else:
+            logger.info('Event is not within the window. So skipping it......')
+    except Exception as ex:
+        logger.error('Failed to process event: {}'.format(event), exc_info=True)
 
 
 def read_events_in_window(file_path, window_min, window_max):
@@ -78,10 +85,18 @@ def read_events_in_window(file_path, window_min, window_max):
 
 
 def write_data(file_path, data):
+    logger.info('Writing the aggregation to file {}'.format(file_path))
+
     with open(file_path, 'w') as fh:
         for d in data:
-            fh.write(json.dumps(d))
-            fh.write(linesep)
+            try:
+                fh.write(json.dumps(d))
+                fh.write(linesep)
+            except:
+                logger.error('Exception occured for data: {}'.format(d))
+
+    logger.info('Finished writing to file {}'.format(file_path))
+
 
 
 def run(events_file, out_file, window_size, breakdown):
@@ -93,5 +108,6 @@ def run(events_file, out_file, window_size, breakdown):
     dt_indexed_dur = [event_enum(window_max - timedelta(minutes=i[1]), window_max - timedelta(minutes=i[0]), []) for i in zip_ob]
 
     events = read_events_in_window(events_file, window_min, window_max)
-    
+    logger.info('Finished reading events from file.')
+
     write_data(out_file, calculate_moving_average(events, dt_indexed_dur))
