@@ -1,4 +1,4 @@
 # ignore the virtualenv folder
 esa/
 src/__pycache__/
-data/out.json
+data/
