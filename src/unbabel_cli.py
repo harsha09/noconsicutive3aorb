@@ -26,7 +26,7 @@ def read_input(input_file, out_file, window_size, breakdown=1):
     if not exists(split(out_file)[0]):
         raise FileNotFoundError('Please provide path to write output file.')
 
-    if split(out_file) < 1:
+    if len(split(out_file)) < 1:
         raise ValueError('Please provide output filename.')
 
     if breakdown < 1 or not isinstance(breakdown, int):
